@@ -1,0 +1,23 @@
+# IDEs
+.idea/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Android
+android/.gradle/
+android/build/
+android/**/build/
+android/local.properties
+android/.idea/
+
+# iOS
+ios/.build/
+ios/**/.build/
+ios/DerivedData/
+ios/**/*.xcuserdata/
+ios/.swiftpm/
+
+# OS
+.DS_Store

@@ -1,0 +1,14 @@
+{
+  "name": "messenger-assignment-mock-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local mock WebSocket server for manual testing of the messenger SDK assignment.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node mock-server.js",
+    "selftest": "node mock-server.js --selftest"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
