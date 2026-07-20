@@ -9,18 +9,6 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
-/**
- * Proves the host app is notified exactly once per event across
- * disconnect/reconnect cycles.
- *
- * `RealtimeClient` used to resubscribe to `transport.inboundMessages` on every
- * `Connected` transition without cancelling the previous subscription. Since
- * that flow is shared across the transport's whole lifetime (including
- * reconnects), each reconnect stacked one more live collector on top of the
- * still-running old ones, so a frame arriving after N reconnects was
- * delivered to the listener N+1 times. These tests fail against that bug and
- * pass once `subscribeToInbound()` is only ever active once per client.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ReconnectTest {
 
@@ -65,8 +53,6 @@ class ReconnectTest {
 
         messenger.connect()
 
-        // Three drop/reconnect cycles — with the old bug this would leave four
-        // stacked collectors on the shared inbound flow.
         repeat(3) {
             transport.simulateDisconnect()
             transport.simulateReconnect()
@@ -98,7 +84,6 @@ class ReconnectTest {
         transport.simulateReconnect()
 
         verify(exactly = 1) { listener.onConnectionStateChanged(ConnectionState.Disconnected) }
-        // Connecting -> Connected fires once at connect() and once at the manual reconnect.
         verify(exactly = 2) { listener.onConnectionStateChanged(ConnectionState.Connected) }
 
         scope.cancel()
