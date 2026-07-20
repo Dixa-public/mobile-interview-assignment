@@ -19,6 +19,16 @@ interface MessengerListener {
 
     /** Called on every connection-state transition. */
     fun onConnectionStateChanged(state: ConnectionState)
+
+    /**
+     * Called when the agent's typing state changes (backend `typing` frame).
+     * Fires at most once per actual state change, including across reconnects.
+     *
+     * Default no-op so existing host-app implementations of this interface
+     * keep compiling unchanged after upgrading — see the written note for why
+     * that makes this a minor, not major, version bump.
+     */
+    fun onTypingChanged(isTyping: Boolean) {}
 }
 
 /**
@@ -61,6 +71,7 @@ class Messenger internal constructor(
             client.events.collect { event ->
                 when (event) {
                     is IncomingEvent.MessageReceived -> listener?.onMessage(event.message)
+                    is IncomingEvent.TypingChanged -> listener?.onTypingChanged(event.isTyping)
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.dixa.messenger.sample
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dixa.messenger.ConnectionState
@@ -45,6 +46,10 @@ class ChatActivity : AppCompatActivity() {
 
             override fun onConnectionStateChanged(state: ConnectionState) = runOnUiThread {
                 binding.connectionBanner.text = "Connection: $state"
+            }
+
+            override fun onTypingChanged(isTyping: Boolean) = runOnUiThread {
+                binding.typingBubble.visibility = if (isTyping) View.VISIBLE else View.GONE
             }
         })
 

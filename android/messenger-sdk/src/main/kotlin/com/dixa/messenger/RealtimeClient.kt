@@ -33,26 +33,32 @@ internal class RealtimeClient(
     fun start() {
         // Single long-lived collector of connection-state transitions.
         scope.launch {
-            transport.connectionState.collect { state ->
-                stateFlow.emit(state)
-                if (state == ConnectionState.Connected) {
-                    subscribeToInbound()
-                }
-            }
+            transport.connectionState.collect { state -> stateFlow.emit(state) }
         }
+        // `inboundMessages` is a single hot flow shared across the transport's
+        // whole lifetime, including reconnects — one collector subscribed here
+        // for the life of this client sees every frame from every connection
+        // exactly once. (Previously this was (re)subscribed on every
+        // `Connected` transition, which stacked a new collector on top of the
+        // still-running old one on each reconnect, so a frame after N
+        // reconnects was delivered N times.)
+        subscribeToInbound()
         transport.connect()
     }
 
     private fun subscribeToInbound() {
-        // Collect inbound frames from the transport.
         scope.launch {
-            try {
-                transport.inboundMessages.collect { raw ->
-                    eventsFlow.emit(parser.parse(raw))
+            transport.inboundMessages.collect { raw ->
+                // Parse failures are per-frame, not fatal to the collection: one
+                // unrecognised/malformed frame must not stop future frames from
+                // being processed.
+                val event = try {
+                    parser.parse(raw)
+                } catch (e: Exception) {
+                    log("dropping unparseable frame: ${e.message}")
+                    null
                 }
-            } catch (e: Exception) {
-                // A parse failure ends this collection; the surrounding scope keeps running.
-                log("inbound collection ended: ${e.message}")
+                if (event != null) eventsFlow.emit(event)
             }
         }
     }
