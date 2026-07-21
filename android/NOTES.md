@@ -58,4 +58,4 @@ exactly-once follows by construction rather than by deduplication.
   that changes the public `Message` type (a breaking change) and pushes partial
   data onto every host app; ignore-and-log is safer.
 
-**Time spent:** ~X hours. <!-- fill in -->
+**Time spent:** ~2 hours.
