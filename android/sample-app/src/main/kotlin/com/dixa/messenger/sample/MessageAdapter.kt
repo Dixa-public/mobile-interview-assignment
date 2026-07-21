@@ -1,8 +1,10 @@
 package com.dixa.messenger.sample
 
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.dixa.messenger.Author
@@ -26,13 +28,20 @@ class MessageAdapter : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() 
 
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         val message = messages[position]
-        holder.author.text = if (message.author == Author.AGENT) "Agent" else "You"
+        val isUser = message.author == Author.USER
+        holder.author.text = if (isUser) "You" else "Agent"
         holder.text.text = message.text
+
+        // Right-align the user's own row, left-align the agent's. Set on every
+        // bind (not just the user branch) so recycled rows never keep a stale
+        // alignment from a previous message.
+        holder.container.gravity = if (isUser) Gravity.END else Gravity.START
     }
 
     override fun getItemCount(): Int = messages.size
 
     class MessageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val container: LinearLayout = view as LinearLayout
         val author: TextView = view.findViewById(R.id.author)
         val text: TextView = view.findViewById(R.id.text)
     }
